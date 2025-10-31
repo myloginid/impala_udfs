@@ -4,6 +4,8 @@ bin/
 *.o
 *.so
 *.a
+\n+# Allow shipping release binaries under dist
+!dist/**/*.so
 
 # OS/editor
 .DS_Store
