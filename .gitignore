@@ -1,0 +1,16 @@
+# Build artifacts
+build/
+dist/
+bin/
+*.o
+*.so
+*.a
+
+# OS/editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Logs
+*.log
