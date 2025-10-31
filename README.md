@@ -37,7 +37,13 @@ Deploy and register
 Option A — HDFS (Impala lib cache)
 ```bash
 hdfs dfs -mkdir -p /user/udf/lib
-hdfs dfs -put -f build/libaes_udf.so /user/udf/lib/
+# Use a release artifact or a local build
+# Example: deploy the appropriate .so to HDFS
+hdfs dfs -put -f dist/rhel8/libaes_udf-rhel8.so /user/udf/lib/libaes_udf.so
+# or
+hdfs dfs -put -f dist/rhel9/libaes_udf-rhel9.so /user/udf/lib/libaes_udf.so
+# or run helper script (auto-picks a local artifact):
+scripts/deploy_hdfs.sh --dst /user/udf/lib/libaes_udf.so
 
 # In impala-shell
 -- Adjust database as needed
@@ -78,6 +84,7 @@ SYMBOL='aes_decrypt';
 
 SQL helper
 - See sql/create_function.sql for ready-to-run statements.
+- See sql/drop_function.sql to remove existing functions.
 
 Implementation caveats
 - AES-ECB provides no semantic security for repeated blocks; CBC/GCM are preferable but would not match Hive’s AES_ENCRYPT.
@@ -86,3 +93,6 @@ Implementation caveats
 Picking RHEL 8 vs 9 builds
 - Build `dist/rhel8/libaes_udf-rhel8.so` on RHEL 8 hosts (OpenSSL 1.1.1 baseline), and `dist/rhel9/libaes_udf-rhel9.so` on RHEL 9 hosts (OpenSSL 3 baseline).
 - Deploy the variant that matches the target OS across the cluster, keep the same path on every node, and reference that path in the CREATE FUNCTION’s `LOCATION`.
+
+Releases
+- Download prebuilt `.so` files from the GitHub Releases page (e.g., v0.1.0) and deploy them as shown above.
