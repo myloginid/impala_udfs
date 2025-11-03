@@ -64,6 +64,11 @@ SELECT hex(default.aes_encrypt('hello', 'secretkey'));
 SELECT CAST(default.aes_decrypt(default.aes_encrypt('hello','secretkey'), 'secretkey') AS STRING);
 ```
 
+SQL test scripts
+- Encrypt tests: `sql/test_aes_encrypt.sql` (adapted from Hive’s udf_aes_encrypt.q). Prints HEX ciphertexts and validates NULL/invalid-key behavior.
+- Decrypt tests: `sql/test_aes_decrypt.sql` (adapted from Hive’s udf_aes_decrypt.q). Verifies plaintext equality and edge cases.
+- Run after registering the UDFs (see `sql/create_function.sql`). Adjust database and HDFS path if needed.
+
 Option B — Local path on each node
 - Copy the shared object to the same absolute path on every impalad node, e.g. `/opt/impala/udf/lib/libaes_udf.so`.
 - Ensure impalad can load the library and its dependencies:
