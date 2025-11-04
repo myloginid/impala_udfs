@@ -45,6 +45,8 @@ if [ "${RUNTIME}" = "podman" ] && [ "${GITHUB_ACTIONS:-false}" != "true" ]; then
 fi
 
 set -x
+# Ensure target directory exists on host before build to avoid any mount-sync quirks
+mkdir -p dist/rhel7
 $RUNTIME run --pull=always --rm ${RUNTIME_PLATFORM_ARG} \
   -v "${VOLUME_MOUNT}" -w /work \
   ${IMAGE} \

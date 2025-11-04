@@ -17,6 +17,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build RHEL 7 (x86_64) in container
+        env:
+          RUNTIME: docker
         run: |
           ./scripts/build_rhel7_container.sh
 
@@ -26,10 +28,14 @@ jobs:
           ls -la dist/rhel7 || true
 
       - name: Build RHEL 8 (x86_64) in container
+        env:
+          RUNTIME: docker
         run: |
           ./scripts/build_rhel8_container.sh
 
       - name: Build RHEL 9 (x86_64) in container
+        env:
+          RUNTIME: docker
         run: |
           ./scripts/build_rhel9_container.sh
 
