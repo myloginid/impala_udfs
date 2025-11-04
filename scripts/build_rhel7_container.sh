@@ -33,9 +33,15 @@ case "${RUNTIME}" in
     ;;
 esac
 
+# Volume mount; use :Z only for podman/SELinux
+VOLUME_MOUNT="${PWD}:/work"
+if [ "${RUNTIME}" = "podman" ]; then
+  VOLUME_MOUNT="${VOLUME_MOUNT}:Z"
+fi
+
 set -x
 $RUNTIME run --pull=always --rm ${RUNTIME_PLATFORM_ARG} \
-  -v "${PWD}":/work:Z -w /work \
+  -v "${VOLUME_MOUNT}" -w /work \
   ${IMAGE} \
   /bin/sh -lc "\
     # Point CentOS 7 repos to vault (EOL mirrors no longer serve 7) && \
