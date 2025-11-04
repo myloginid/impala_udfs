@@ -21,20 +21,19 @@ ARCH=${ARCH:-amd64}
 RUNTIME_PLATFORM_ARG=""
 case "${RUNTIME}" in
   podman)
-    RUNTIME_PLATFORM_ARG=(--arch "${ARCH}")
+    RUNTIME_PLATFORM_ARG="--arch ${ARCH}"
     ;;
   docker)
     case "${ARCH}" in
-      amd64) RUNTIME_PLATFORM_ARG=(--platform linux/amd64) ;;
-      x86_64) RUNTIME_PLATFORM_ARG=(--platform linux/amd64) ;;
-      arm64|aarch64) RUNTIME_PLATFORM_ARG=(--platform linux/arm64) ;;
-      *) RUNTIME_PLATFORM_ARG=() ;;
+      amd64|x86_64) RUNTIME_PLATFORM_ARG="--platform linux/amd64" ;;
+      arm64|aarch64) RUNTIME_PLATFORM_ARG="--platform linux/arm64" ;;
+      *) RUNTIME_PLATFORM_ARG="" ;;
     esac
     ;;
 esac
 
 set -x
-$RUNTIME run --pull=always --rm "${RUNTIME_PLATFORM_ARG[@]}" \
+$RUNTIME run --pull=always --rm ${RUNTIME_PLATFORM_ARG} \
   -v "${PWD}":/work:Z -w /work \
   ${IMAGE} \
   /bin/sh -lc "\
