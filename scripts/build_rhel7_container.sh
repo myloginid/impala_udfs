@@ -47,7 +47,14 @@ fi
 set -x
 # Ensure target directory exists on host before build to avoid any mount-sync quirks
 mkdir -p dist/rhel7
-$RUNTIME run --pull=always --rm ${RUNTIME_PLATFORM_ARG} \
+
+# Build in a named container so we can docker/podman cp the artifact back
+CONTAINER_NAME="aes-udf-rhel7-$$"
+# Clean any stale container with same name
+${RUNTIME} rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+
+RUN_RC=0
+${RUNTIME} run --pull=always --name "${CONTAINER_NAME}" ${RUNTIME_PLATFORM_ARG} \
   -v "${VOLUME_MOUNT}" -w /work \
   ${IMAGE} \
   /bin/sh -lc "\
@@ -69,7 +76,19 @@ $RUNTIME run --pull=always --rm ${RUNTIME_PLATFORM_ARG} \
     (sha256sum dist/rhel7/libaes_udf-rhel7.so || true) && \
     sync && \
     echo 'probe' > dist/rhel7/_probe_container \
-  "
+  " || RUN_RC=$?
+
+if [[ ${RUN_RC} -ne 0 ]]; then
+  echo "Container build exited with code ${RUN_RC}" >&2
+  ${RUNTIME} logs "${CONTAINER_NAME}" || true
+fi
+
+# If host doesn't see the artifact, try copying it from the container
+if [[ ! -f dist/rhel7/libaes_udf-rhel7.so ]]; then
+  echo "Attempting to copy artifact from container filesystem..."
+  ${RUNTIME} cp "${CONTAINER_NAME}:/work/dist/rhel7/libaes_udf-rhel7.so" dist/rhel7/ || true
+  ${RUNTIME} cp "${CONTAINER_NAME}:/work/dist/rhel7/_probe_container" dist/rhel7/ || true
+fi
 
 echo "Built dist/rhel7/libaes_udf-rhel7.so"
 
@@ -80,3 +99,6 @@ if [[ ! -f dist/rhel7/libaes_udf-rhel7.so ]]; then
   ls -la dist/rhel7 || true
   exit 3
 fi
+
+# Cleanup named container
+${RUNTIME} rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
