@@ -20,6 +20,11 @@ jobs:
         run: |
           ./scripts/build_rhel7_container.sh
 
+      - name: Verify RHEL7 artifact exists
+        run: |
+          ls -la dist || true
+          ls -la dist/rhel7 || true
+
       - name: Build RHEL 8 (x86_64) in container
         run: |
           ./scripts/build_rhel8_container.sh
@@ -33,18 +38,21 @@ jobs:
         with:
           name: libaes_udf-rhel7
           path: dist/rhel7/libaes_udf-rhel7.so
+          if-no-files-found: error
 
       - name: Upload artifact (RHEL8)
         uses: actions/upload-artifact@v4
         with:
           name: libaes_udf-rhel8
           path: dist/rhel8/libaes_udf-rhel8.so
+          if-no-files-found: error
 
       - name: Upload artifact (RHEL9)
         uses: actions/upload-artifact@v4
         with:
           name: libaes_udf-rhel9
           path: dist/rhel9/libaes_udf-rhel9.so
+          if-no-files-found: error
 
   release:
     runs-on: ubuntu-latest

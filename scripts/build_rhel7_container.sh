@@ -15,7 +15,8 @@ else
 fi
 
 # CentOS 7 provides an RHEL7-compatible userspace and OpenSSL 1.0.2.
-IMAGE=${IMAGE:-centos:7}
+# Prefer Quay mirror for reliability on CI runners.
+IMAGE=${IMAGE:-quay.io/centos/centos:7}
 ARCH=${ARCH:-amd64}
 
 # Map ARCH to runtime-specific flag
