@@ -61,8 +61,14 @@ jobs:
         run: |
           ls -laR artifacts || true
 
+      - name: Generate SHA256 checksums
+        run: |
+          (cd artifacts && sha256sum *.so > SHA256SUMS.txt)
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/*.so
+            artifacts/SHA256SUMS.txt
+          body_path: artifacts/SHA256SUMS.txt
