@@ -5,12 +5,13 @@ set -euo pipefail
 # Output: dist/rhel9/libaes_udf-rhel9.so
 
 RUNTIME=${RUNTIME:-}
-if command -v podman >/dev/null 2>&1; then
-  RUNTIME=${RUNTIME:-podman}
-elif command -v docker >/dev/null 2>&1; then
+# Prefer Docker on CI runners; fall back to Podman if Docker missing.
+if command -v docker >/dev/null 2>&1; then
   RUNTIME=${RUNTIME:-docker}
+elif command -v podman >/dev/null 2>&1; then
+  RUNTIME=${RUNTIME:-podman}
 else
-  echo "No container runtime found (podman or docker)." >&2
+  echo "No container runtime found (docker or podman)." >&2
   exit 2
 fi
 
@@ -32,10 +33,13 @@ case "${RUNTIME}" in
     ;;
 esac
 
-# Volume mount; use :Z only for podman/SELinux
+# Volume mount
 VOLUME_MOUNT="${PWD}:/work"
-if [ "${RUNTIME}" = "podman" ]; then
-  VOLUME_MOUNT="${VOLUME_MOUNT}:Z"
+# Only add :Z label when using podman on SELinux hosts (and not on GitHub Actions)
+if [ "${RUNTIME}" = "podman" ] && [ "${GITHUB_ACTIONS:-false}" != "true" ]; then
+  if [ -f /sys/fs/selinux/enforce ] && grep -q "^1$" /sys/fs/selinux/enforce 2>/dev/null; then
+    VOLUME_MOUNT="${VOLUME_MOUNT}:Z"
+  fi
 fi
 
 set -x
