@@ -61,7 +61,14 @@ $RUNTIME run --pull=always --rm ${RUNTIME_PLATFORM_ARG} \
     yum -y install gcc-c++ make openssl-devel boost-devel curl && \
     mkdir -p /usr/include/impala_udf && \
     curl -fsSL https://raw.githubusercontent.com/apache/impala/master/be/src/udf/udf.h -o /usr/include/impala_udf/udf.h && \
-    make rhel7 IMPALA_UDF_INCLUDE_ROOT=/usr/include \
+    echo 'Inside container uid/gid:' && id && whoami && \
+    echo 'Workspace mount:' && mount | grep ' /work ' || true && \
+    echo 'Before build, dist listing:' && ls -la dist || true && ls -la dist/rhel7 || true && \
+    make -B rhel7 V=1 IMPALA_UDF_INCLUDE_ROOT=/usr/include && \
+    echo '__CONTAINER_POST_BUILD__' && ls -la dist && ls -la dist/rhel7 && \
+    (sha256sum dist/rhel7/libaes_udf-rhel7.so || true) && \
+    sync && \
+    echo 'probe' > dist/rhel7/_probe_container \
   "
 
 echo "Built dist/rhel7/libaes_udf-rhel7.so"
