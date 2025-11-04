@@ -30,7 +30,7 @@ $RUNTIME run --pull=always --rm --arch ${ARCH} \
                -e 's|^#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|' \$f || true; \
       done; \
     fi && \
-    yum -y install gcc-c++ make openssl-devel curl && \
+    yum -y install gcc-c++ make openssl-devel boost-devel curl && \
     mkdir -p /usr/include/impala_udf && \
     curl -fsSL https://raw.githubusercontent.com/apache/impala/master/be/src/udf/udf.h -o /usr/include/impala_udf/udf.h && \
     make rhel7 IMPALA_UDF_INCLUDE_ROOT=/usr/include \
