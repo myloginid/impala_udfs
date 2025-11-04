@@ -28,6 +28,12 @@ jobs:
         run: |
           ./scripts/build_rhel9_container.sh
 
+      - name: Upload artifact (RHEL7)
+        uses: actions/upload-artifact@v4
+        with:
+          name: libaes_udf-rhel7
+          path: dist/rhel7/libaes_udf-rhel7.so
+
       - name: Upload artifact (RHEL8)
         uses: actions/upload-artifact@v4
         with:
@@ -40,17 +46,23 @@ jobs:
           name: libaes_udf-rhel9
           path: dist/rhel9/libaes_udf-rhel9.so
 
-      - name: Upload artifact (RHEL7)
-        uses: actions/upload-artifact@v4
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: libaes_udf-rhel7
-          path: dist/rhel7/libaes_udf-rhel7.so
+          path: artifacts
+          merge-multiple: true
 
-      - name: Create GitHub Release (on tag)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: List downloaded artifacts
+        run: |
+          ls -laR artifacts || true
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/rhel7/libaes_udf-rhel7.so
-            dist/rhel8/libaes_udf-rhel8.so
-            dist/rhel9/libaes_udf-rhel9.so
+            artifacts/*.so
