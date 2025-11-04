@@ -58,23 +58,23 @@ ${RUNTIME} run --pull=always --name "${CONTAINER_NAME}" ${RUNTIME_PLATFORM_ARG} 
   -v "${VOLUME_MOUNT}" -w /work \
   ${IMAGE} \
   /bin/sh -lc "\
-    # Point CentOS 7 repos to vault (EOL mirrors no longer serve 7) && \
+    set -euo pipefail; \
     if [ -d /etc/yum.repos.d ]; then \
       for f in /etc/yum.repos.d/*.repo; do \
         sed -i -e 's/^mirrorlist=/#mirrorlist=/' \
                -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|' \$f || true; \
       done; \
-    fi && \
-    yum -y install gcc-c++ make openssl-devel boost-devel curl && \
-    mkdir -p /usr/include/impala_udf && \
-    curl -fsSL https://raw.githubusercontent.com/apache/impala/master/be/src/udf/udf.h -o /usr/include/impala_udf/udf.h && \
-    echo 'Inside container uid/gid:' && id && whoami && \
-    echo 'Workspace mount:' && mount | grep ' /work ' || true && \
-    echo 'Before build, dist listing:' && ls -la dist || true && ls -la dist/rhel7 || true && \
-    make -B rhel7 V=1 IMPALA_UDF_INCLUDE_ROOT=/usr/include && \
-    echo '__CONTAINER_POST_BUILD__' && ls -la dist && ls -la dist/rhel7 && \
-    (sha256sum dist/rhel7/libaes_udf-rhel7.so || true) && \
-    sync && \
+    fi; \
+    yum -y install gcc-c++ make openssl-devel boost-devel curl; \
+    mkdir -p /usr/include/impala_udf; \
+    curl -fsSL https://raw.githubusercontent.com/apache/impala/master/be/src/udf/udf.h -o /usr/include/impala_udf/udf.h; \
+    echo 'Inside container uid/gid:'; id; whoami; \
+    echo 'Workspace mount:'; mount | grep ' /work ' || true; \
+    echo 'Before build, dist listing:'; ls -la dist || true; ls -la dist/rhel7 || true; \
+    make -B rhel7 V=1 IMPALA_UDF_INCLUDE_ROOT=/usr/include; \
+    echo '__CONTAINER_POST_BUILD__'; ls -la dist; ls -la dist/rhel7; \
+    (sha256sum dist/rhel7/libaes_udf-rhel7.so || true); \
+    sync; \
     echo 'probe' > dist/rhel7/_probe_container \
   " || RUN_RC=$?
 
