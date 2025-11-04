@@ -7,7 +7,7 @@ set -euo pipefail
 #   scripts/deploy_hdfs.sh [--src <local-so>] [--dst <hdfs-path>]
 #
 # Defaults:
-#   --src: prefer dist/rhel8/libaes_udf-rhel8.so, then dist/rhel9/libaes_udf-rhel9.so, then build/libaes_udf.so
+#   --src: prefer dist/rhel8/libaes_udf-rhel8.so, then dist/rhel9/libaes_udf-rhel9.so, then dist/rhel7/libaes_udf-rhel7.so, then build/libaes_udf.so
 #   --dst: /user/udf/lib/libaes_udf.so
 
 SRC=""
@@ -28,6 +28,8 @@ if [[ -z "$SRC" ]]; then
     SRC=dist/rhel8/libaes_udf-rhel8.so
   elif [[ -f dist/rhel9/libaes_udf-rhel9.so ]]; then
     SRC=dist/rhel9/libaes_udf-rhel9.so
+  elif [[ -f dist/rhel7/libaes_udf-rhel7.so ]]; then
+    SRC=dist/rhel7/libaes_udf-rhel7.so
   elif [[ -f build/libaes_udf.so ]]; then
     SRC=build/libaes_udf.so
   else
@@ -54,4 +56,3 @@ SYMBOL='aes_decrypt';
 SQL
 
 echo "Done"
-

@@ -4,6 +4,8 @@
 #include <openssl/evp.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
+#include <openssl/crypto.h>
+#include <openssl/opensslv.h>
 #include <string.h>
 #include <stdio.h>
 #include <string>
@@ -17,6 +19,26 @@ static const EVP_CIPHER* cipher_for_keylen(int key_len) {
     default: return nullptr;
   }
 }
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+// Backport helpers for OpenSSL 1.0.2 (no *_new/_free APIs)
+static inline EVP_CIPHER_CTX* EVP_CIPHER_CTX_new_compat() {
+  EVP_CIPHER_CTX* ctx = (EVP_CIPHER_CTX*)OPENSSL_malloc(sizeof(EVP_CIPHER_CTX));
+  if (ctx) {
+    memset(ctx, 0, sizeof(EVP_CIPHER_CTX));
+    EVP_CIPHER_CTX_init(ctx);
+  }
+  return ctx;
+}
+static inline void EVP_CIPHER_CTX_free_compat(EVP_CIPHER_CTX* ctx) {
+  if (ctx) {
+    EVP_CIPHER_CTX_cleanup(ctx);
+    OPENSSL_free(ctx);
+  }
+}
+#define EVP_CIPHER_CTX_new EVP_CIPHER_CTX_new_compat
+#define EVP_CIPHER_CTX_free EVP_CIPHER_CTX_free_compat
+#endif
 
 static bool aes_encrypt_ecb_pkcs7(const unsigned char* in, int in_len,
                                   const unsigned char* key, int key_len,

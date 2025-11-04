@@ -1,4 +1,4 @@
-Impala AES Encrypt/Decrypt UDF (RHEL 8/9)
+Impala AES Encrypt/Decrypt UDF (RHEL 7/8/9)
 
 This project provides Impala scalar UDFs `aes_encrypt(string input, string key)` and `aes_decrypt(string input, string key)` implemented with OpenSSL. They match Hive semantics (AES/ECB/PKCS5Padding) and return/consume raw binary in `STRING`.
 
@@ -8,7 +8,7 @@ Hive compatibility
 - Input or key `NULL` → returns `NULL`.
 - Symbols: `aes_encrypt`, `aes_decrypt`.
 
-Prerequisites (RHEL 8/9)
+Prerequisites (RHEL 7/8/9)
 - `gcc-c++`, `make`, `openssl-devel`.
 - Impala UDF headers available so `<impala_udf/udf.h>` resolves. For CDP/Impala installs this is typically provided by an `impala-udf-devel` (or similar) package that places headers under `/usr/include/impala_udf` (included through `/usr/include`).
 On macOS/Linux dev hosts without system OpenSSL headers, set:
@@ -18,6 +18,7 @@ Build
 ```bash
 make                       # builds to build/libaes_udf.so
 make strip                 # optional: strip symbols
+make rhel7                 # builds dist/rhel7/libaes_udf-rhel7.so
 make rhel8                 # builds dist/rhel8/libaes_udf-rhel8.so
 make rhel9                 # builds dist/rhel9/libaes_udf-rhel9.so
 
@@ -26,6 +27,7 @@ make check                 # builds and runs a CLI test
 ```
 
 Containerized builds (podman/docker)
+- RHEL 7: `./scripts/build_rhel7_container.sh`
 - RHEL 8: `./scripts/build_rhel8_container.sh`
 - RHEL 9: `./scripts/build_rhel9_container.sh`
 - On Apple Silicon, these scripts default to amd64 (x86_64). To build aarch64 instead, set `ARCH=aarch64`.
@@ -95,8 +97,10 @@ Implementation caveats
 - AES-ECB provides no semantic security for repeated blocks; CBC/GCM are preferable but would not match Hive’s AES_ENCRYPT.
 - The UDF returns raw binary in a `STRING`; use `hex()` to inspect.
 
-Picking RHEL 8 vs 9 builds
-- Build `dist/rhel8/libaes_udf-rhel8.so` on RHEL 8 hosts (OpenSSL 1.1.1 baseline), and `dist/rhel9/libaes_udf-rhel9.so` on RHEL 9 hosts (OpenSSL 3 baseline).
+Picking RHEL 7/8/9 builds
+- RHEL 7: build `dist/rhel7/libaes_udf-rhel7.so` (OpenSSL 1.0.2 baseline).
+- RHEL 8: build `dist/rhel8/libaes_udf-rhel8.so` (OpenSSL 1.1.1 baseline).
+- RHEL 9: build `dist/rhel9/libaes_udf-rhel9.so` (OpenSSL 3 baseline).
 - Deploy the variant that matches the target OS across the cluster, keep the same path on every node, and reference that path in the CREATE FUNCTION’s `LOCATION`.
 
 Releases

@@ -22,12 +22,13 @@ DIST_DIR := dist
 TARGET := $(BUILD_DIR)/libaes_udf.so
 TARGET_RHEL8 := $(DIST_DIR)/rhel8/libaes_udf-rhel8.so
 TARGET_RHEL9 := $(DIST_DIR)/rhel9/libaes_udf-rhel9.so
+TARGET_RHEL7 := $(DIST_DIR)/rhel7/libaes_udf-rhel7.so
 
 BIN_DIR := bin
 CLI := $(BIN_DIR)/aes_cli
 CLI_SRC := src/aes_cli.cc
 
-.PHONY: all clean strip print-syms test-cli check dist rhel8 rhel9
+.PHONY: all clean strip print-syms test-cli check dist rhel8 rhel9 rhel7
 
 all: $(TARGET)
 
@@ -64,6 +65,9 @@ $(DIST_DIR)/rhel8:
 $(DIST_DIR)/rhel9:
 	@mkdir -p $@
 
+$(DIST_DIR)/rhel7:
+	@mkdir -p $@
+
 # Build with API compat macros to ease building on respective OS
 rhel8: CPPFLAGS += -DOPENSSL_API_COMPAT=0x10100000L
 rhel8: $(TARGET_RHEL8)
@@ -75,4 +79,11 @@ rhel9: CPPFLAGS += -DOPENSSL_API_COMPAT=0x30000000L
 rhel9: $(TARGET_RHEL9)
 
 $(TARGET_RHEL9): $(SRC) | $(DIST_DIR)/rhel9
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ $< $(LDFLAGS) $(LDLIBS)
+
+# RHEL 7 uses OpenSSL 1.0.2. Build a compatible artifact.
+rhel7: CPPFLAGS += -DOPENSSL_API_COMPAT=0x10000000L
+rhel7: $(TARGET_RHEL7)
+
+$(TARGET_RHEL7): $(SRC) | $(DIST_DIR)/rhel7
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ $< $(LDFLAGS) $(LDLIBS)

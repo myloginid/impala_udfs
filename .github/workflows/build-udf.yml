@@ -16,6 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Build RHEL 7 (x86_64) in container
+        run: |
+          ./scripts/build_rhel7_container.sh
+
       - name: Build RHEL 8 (x86_64) in container
         run: |
           ./scripts/build_rhel8_container.sh
@@ -36,10 +40,17 @@ jobs:
           name: libaes_udf-rhel9
           path: dist/rhel9/libaes_udf-rhel9.so
 
+      - name: Upload artifact (RHEL7)
+        uses: actions/upload-artifact@v4
+        with:
+          name: libaes_udf-rhel7
+          path: dist/rhel7/libaes_udf-rhel7.so
+
       - name: Create GitHub Release (on tag)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            dist/rhel7/libaes_udf-rhel7.so
             dist/rhel8/libaes_udf-rhel8.so
             dist/rhel9/libaes_udf-rhel9.so
